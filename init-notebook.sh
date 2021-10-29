@@ -1,6 +1,7 @@
 #!/bin/sh
 
 # Clone the repository in /home/jovyan/work
+REPO_URL=https://github.com/InseeFrLab/spark-formation.git
 git clone $REPO_URL /home/jovyan/work/spark-formation
 chown -R jovyan:users /home/jovyan/work/spark-formation
 
