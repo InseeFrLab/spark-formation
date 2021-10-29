@@ -9,4 +9,4 @@ chown -R jovyan:users /home/jovyan/work/spark-formation
 [ -f /home/jovyan/work/requirements.txt ] && pip install -r /home/jovyan/work/requirements.txt
 
 # Open a given notebook
-[ -z "$IPYNB_PATH" ] || echo "c.LabApp.default_url = '/lab/tree/spark-formation/${IPYNB_PATH}'" >> /home/jovyan/.jupyter/jupyter_notebook_config.py
+[ -z "$IPYNB_PATH" ] || echo "c.LabApp.default_url = '/tree/spark-formation/${IPYNB_PATH}'" >> /home/jovyan/.jupyter/jupyter_notebook_config.py
