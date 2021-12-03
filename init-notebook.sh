@@ -3,8 +3,8 @@
 # Clone the repository in /home/jovyan/work
 REPO=formation-spark
 REPO_URL=https://github.com/InseeFrLab/${REPO}.git
-git clone $REPO_URL /home/jovyan/work/${REPO}
-chown -R jovyan:users /home/jovyan/work/${REPO}
+git clone $REPO_URL $ROOT_PROJECT_DIRECTORY/${REPO}
+chown -R jovyan:users $ROOT_PROJECT_DIRECTORY/${REPO}
 
 # Install dependencies
 [ -f /home/jovyan/work/requirements.txt ] && pip install -r /home/jovyan/work/requirements.txt
