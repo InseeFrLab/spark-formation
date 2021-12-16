@@ -1,0 +1,48 @@
+---
+title: "SparkR"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Objectifs
+
+Cette formation va reprendre les exemples des tutoriaux pyspark sur parquet et hivemetastore.
+Il est fortement recommandé de parcourir les formations précedentes en python (pyspark). Les concepts liés à Spark sont indépendant du langage pour "appeler" Spark. 
+
+L'objectif est donc de voir comment avoir recours à Spark depuis R grace à l'API SparkR. 
+Une librairie d'accès concurrente existe "Sparklyr"
+
+Je prefère présenter la lirairie d'accès proposer par le projet Apache Spark.
+
+## Initialisation du contexte Spark
+
+```{r spark, echo=FALSE}
+library(SparkR)
+
+# Initialize SparkSession
+sparkR.session(master = "k8s://https://kubernetes.default.svc:443", appName = "SparkR", sparkHome = Sys.getenv("SPARK_HOME"),
+               list(spark.kubernetes.container.image="inseefrlab/rstudio:r4.1.1-spark3.2.0", 
+                    spark.kubernetes.authenticate.driver.serviceAccountName="rstudio-282786",
+                    spark.executor.instances="5",
+                    spark.kubernetes.namespace="user-tm8enk")
+)
+```
+
+On peut vérifier la présence de nos 5 executeurs spark R
+
+```{bash , echo=TRUE}
+kubectl get pods -l spark-role=executor
+```
+## accès à un fichier csv
+
+```{r csv, echo=FALSE}
+df <- read.df("s3a://projet-spark-lab/diffusion/formation/data/sirene/sirene.csv", "csv", header = "true", inferSchema = "true")
+```
+
+```{r csv, echo=TRUE}
+head(df)
+```
+
