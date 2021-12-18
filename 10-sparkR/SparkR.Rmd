@@ -21,7 +21,7 @@ Je prefère présenter la lirairie d'accès proposer par le projet Apache Spark.
 
 Lors d'une phase de developpement sur donnée volumineuse, il est interessant d'utiliser une configuration dynamique du nombre d'executeurs afin de relacher les ressources lorsque l'on execute pas de taches.
 
-```{r spark, echo=FALSE}
+```{r}
 library(SparkR)
 
 # Initialize SparkSession
@@ -53,23 +53,23 @@ kubectl get pods -l spark-role=executor
 
 Attention la lecture d'un fichier avec inférence du schéma est couteuse car l'ensemble du fichier va etre lu pour en déduire le schéma.
 
-```{r csv, echo=FALSE}
+```{r }
 df <- read.df("s3a://projet-spark-lab/diffusion/formation/data/sirene/sirene.csv", "csv", header = "true", inferSchema = "true")
 ```
 
-```{r csv, echo=TRUE}
+```{r}
 head(df)
 ```
 ## manipulation du dataframe avec l'api SparkR
 
-```{r, echo=FALSE}
+```{r}
 ape_count <- summarize(groupBy(df, df$activitePrincipaleEtablissement), count = n(df$activitePrincipaleEtablissement))
 head(arrange(ape_count, desc(ape_count$count)))
 ```
-## accès à un fichier
+## accès à un fichier via une requête SQL
 
 Ici on va enregistrer la table en lui donnant un nom (sirene) puis l'utiliser dans une requête sql
-```{r, echo=TRUE}
+```{r}
 createOrReplaceTempView(df, "sirene")
 ape_count_sql<- sql("SELECT count(*) as tot , activitePrincipaleEtablissement FROM sirene group by activitePrincipaleEtablissement order by tot desc;")
 head(ape_count_sql)
@@ -79,18 +79,41 @@ head(ape_count_sql)
 
 Le format parquet est idéal pour manipuler des données volumineuses.
 Le schéma est présent dans le format, pas besoin d'inférer.
-```{r, echo=FALSE}
+```{r}
 dfparquet <- read.df("s3a://projet-spark-lab/diffusion/formation/data/sirene.parquet", "parquet")
 createOrReplaceTempView(dfparquet, "sireneparquet")
 ```
 
-```{r, echo=TRUE}
+```{r}
 ape_count_parquet<- sql("SELECT count(*) as tot , activitePrincipaleEtablissement FROM sireneparquet group by activitePrincipaleEtablissement order by tot desc;")
 head(ape_count_parquet)
 ```
-Comme en python, seules les colonnes nécessaires à l'exploitation de la requête (activitePrincipaleEtablissement) n'a été téléchargée depuis le stockage ce qui est beaucoup plus rapide
+Comme en python, seules les colonnes nécessaires à l'exploitation de la requête (activitePrincipaleEtablissement) ont été téléchargées depuis le stockage ce qui est beaucoup plus rapide
 
-```{r, echo=FALSE}
+## Hive metastore
+
+Avant de démarrer vous pouvez démarrer le service hive metastore et si vous avez suivi le tutorial sur ce sujet il référence une table sirene.
+
+L'environnement spark a connaissance dans son fichier de configuration de votre metastore hive. On le vérifie en listant les tables disponibles.
+```{r}
+head(sql("show tables;"))
+```
+J'ai les deux tables temporaires csv et parquet que nous avons référencé manuellement et temporairement à cette session spark. J'ai également une table sirene et deux tables données de caisse ( données simulées ) référence dans mon metastore hive.
+Si vous n'avez aucune table je vous propose la requête de création de a table.
+
+
+```{r eval=FALSE, include=FALSE}
+sql("CREATE EXTERNAL TABLE sirene2 (siren int,nic int,siret bigint,dateFin string,dateDebut string,etatAdministratifEtablissement string,changementEtatAdministratifEtablissement boolean,enseigne1Etablissement string,enseigne2Etablissement string,enseigne3Etablissement string,changementEnseigneEtablissement boolean,denominationUsuelleEtablissement string,changementDenominationUsuelleEtablissement boolean,activitePrincipaleEtablissement string,nomenclatureActivitePrincipaleEtablissement string,changementActivitePrincipaleEtablissement string,caractereEmployeurEtablissement string,changementCaractereEmployeurEtablissement string ) STORED as parquet LOCATION 's3a://projet-spark-lab/diffusion/formation/data/sirene-10-partitions.parquet'")
+```
+```{r}
+head(sql("show tables;"))
+```
+```{r}
+hivedf<-sql('SELECT count(*) as tot , activitePrincipaleEtablissement FROM sirene2 group by activitePrincipaleEtablissement order by tot desc LIMIT 10')
+head(hivedf)
+```
+
+```{r}
 
 sparkR.session.stop()
 
