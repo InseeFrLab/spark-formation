@@ -10,7 +10,7 @@ chown -R onyxia:users $ROOT_PROJECT_DIRECTORY/${REPO}
 [ -f $HOME/work/formation-spark/requirements.txt ] && pip install -r $HOME/work/formation-spark/requirements.txt
 
 # Open the relevant notebook when starting Jupyter Lab
-jupyter server --generate-config
+# jupyter server --generate-config
 echo "c.LabApp.default_url = '/lab/tree/formation-spark/${IPYNB_PATH%.*}/${IPYNB_PATH}'" >> $HOME/.jupyter/jupyter_server_config.py
 echo "c.IPKernelApp.capture_fd_output = False" >> $HOME/.jupyter/jupyter_server_config.py
 
